@@ -1,0 +1,49 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Quiniela Mundial 2026 - Cantón de Paraíso</title>
+  <meta name="description" content="Quiniela del Mundial FIFA 2026 · Cantón de Paraíso, Cartago · Vívelo en Familia" />
+  <meta name="theme-color" content="#061030" />
+
+  <!-- Tabler Icons -->
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@2.44.0/tabler-icons.min.css" />
+
+  <!-- Open Graph para WhatsApp / redes -->
+  <meta property="og:title" content="Quiniela Paraíso 2026 🏆" />
+  <meta property="og:description" content="Participa del Mundial 2026 y vívelo en familia. ¡Inscríbete ya!" />
+  <meta property="og:type" content="website" />
+
+  <style>
+    body { background: #061030; margin: 0; }
+    #loading {
+      position: fixed; inset: 0;
+      background: #061030;
+      display: flex; flex-direction: column;
+      align-items: center; justify-content: center;
+      gap: 16px; z-index: 9999;
+      font-family: 'monospace';
+      color: rgba(255,210,74,0.85);
+      font-size: 13px;
+      letter-spacing: 3px;
+    }
+    .load-ball { font-size: 48px; animation: bounce 0.8s ease infinite alternate; }
+    @keyframes bounce { from { transform: translateY(0); } to { transform: translateY(-16px); } }
+  </style>
+</head>
+<body>
+  <div id="loading">
+    <div class="load-ball">⚽</div>
+    CARGANDO...
+  </div>
+  <div id="app"></div>
+
+  <script>
+    window.addEventListener('load', () => {
+      document.getElementById('loading').style.display = 'none'
+    })
+  </script>
+  <script type="module" src="/main.js"></script>
+</body>
+</html>
