@@ -20,6 +20,9 @@ import { partidoBloqueado, eliminacionBloqueada, textoCierre, formatoFechaPartid
 //  CONFIGURACIÓN DEL GRUPO  (cambiar al clonar la app)
 // ═══════════════════════════════════════════════════════
 const CONDOMINIO = import.meta.env.VITE_NOMBRE_SEDE || 'Cantón de Paraíso'
+// Poné en false para ARRANCAR DIRECTO EN ELIMINATORIAS (oculta la fase de grupos).
+// Poné en true si clonás una quiniela desde el inicio del torneo.
+const MOSTRAR_GRUPOS = false
 // ═══════════════════════════════════════════════════════
 
 // ── STATE ─────────────────────────────────────────────
@@ -238,12 +241,13 @@ window.showAdminLogin = async () => {
 
 // ── MAIN APP ──────────────────────────────────────────
 function renderApp() {
-  const tabs = [
-    { id: 'grupos', icon: 'ti-layout-grid', label: 'Grupos' },
+  const tabs = []
+  if (MOSTRAR_GRUPOS) tabs.push({ id: 'grupos', icon: 'ti-layout-grid', label: 'Grupos' })
+  tabs.push(
     { id: 'eliminacion', icon: 'ti-tournament', label: 'Eliminación' },
     { id: 'especiales', icon: 'ti-star', label: 'Especiales' },
     { id: 'ranking', icon: 'ti-podium', label: 'Ranking' },
-  ]
+  )
   if (user?.es_admin || sessionStorage.getItem('adminMode')) {
     tabs.push({ id: 'admin', icon: 'ti-settings', label: 'Admin' })
   }
@@ -288,8 +292,8 @@ function renderApp() {
       <span style="font-size:13px;line-height:1.4;color:var(--text,#eaf6ff);">Recuerda llenar los <strong>Especiales</strong> antes del <strong>22 de junio a las 12:00</strong>: Campeón, Subcampeón y Goleador.</span>
     </div>` : ''}
 
-    <div id="page-grupos" class="page active"></div>
-    <div id="page-eliminacion" class="page"></div>
+    <div id="page-grupos" class="page${MOSTRAR_GRUPOS ? ' active' : ''}"></div>
+    <div id="page-eliminacion" class="page${MOSTRAR_GRUPOS ? '' : ' active'}"></div>
     <div id="page-especiales" class="page"></div>
     <div id="page-ranking" class="page"></div>
     ${user?.es_admin || sessionStorage.getItem('adminMode') ? '<div id="page-admin" class="page"></div>' : ''}
@@ -316,8 +320,13 @@ function renderApp() {
     renderAuth()
   }
 
-  renderGrupos()
-  document.getElementById('tab-grupos')?.classList.add('active')
+  if (MOSTRAR_GRUPOS) {
+    renderGrupos()
+    document.getElementById('tab-grupos')?.classList.add('active')
+  } else {
+    renderEliminacion()
+    document.getElementById('tab-eliminacion')?.classList.add('active')
+  }
   setTimeout(() => montarBalon3D('ball-canvas'), 50)
 }
 
@@ -687,7 +696,7 @@ async function renderRanking() {
           <thead><tr>
             <th>#</th>
             <th>Participante</th>
-            <th>Grupos</th>
+            ${MOSTRAR_GRUPOS ? '<th>Grupos</th>' : ''}
             <th>KO</th>
             <th>Especiales</th>
             <th>Total</th>
@@ -700,7 +709,7 @@ async function renderRanking() {
               return `<tr class="rank-row">
                 <td><span class="rank-pos ${cls}">${medal}</span></td>
                 <td style="font-weight:600;font-size:15px;">${r.nombre || '—'}</td>
-                <td style="font-family:'Orbitron',monospace;font-size:13px;color:var(--text-dim);">${r.pts_grupos}</td>
+                ${MOSTRAR_GRUPOS ? `<td style="font-family:'Orbitron',monospace;font-size:13px;color:var(--text-dim);">${r.pts_grupos}</td>` : ''}
                 <td style="font-family:'Orbitron',monospace;font-size:13px;color:var(--text-dim);">${r.pts_ko}</td>
                 <td style="font-family:'Orbitron',monospace;font-size:13px;color:var(--text-dim);">${r.pts_especiales}</td>
                 <td><span class="rank-pts">${r.total}</span></td>
