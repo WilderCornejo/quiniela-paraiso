@@ -23,6 +23,10 @@ const CONDOMINIO = import.meta.env.VITE_NOMBRE_SEDE || 'Cantón de Paraíso'
 // Poné en false para ARRANCAR DIRECTO EN ELIMINATORIAS (oculta la fase de grupos).
 // Poné en true si clonás una quiniela desde el inicio del torneo.
 const MOSTRAR_GRUPOS = false
+// Cierre de Especiales: viernes 3 de julio 2026 a las 11:59 p.m. (hora Costa Rica)
+const CIERRE_ESPECIALES = new Date('2026-07-03T23:59:00-06:00')
+const especialesCerrado = () => Date.now() > CIERRE_ESPECIALES.getTime()
+const TEXTO_CIERRE_ESP = 'viernes 3 de julio a las 11:59 p.m.'
 // ═══════════════════════════════════════════════════════
 
 // ── STATE ─────────────────────────────────────────────
@@ -286,11 +290,14 @@ function renderApp() {
       `).join('')}
     </nav>
 
-    ${!eliminacionBloqueada(fechasGrupos) ? `
-    <div onclick="showPage('especiales')" style="cursor:pointer;max-width:760px;margin:0 auto 6px;padding:12px 16px;border:1px solid rgba(255,210,74,0.4);border-radius:10px;background:linear-gradient(90deg,rgba(255,210,74,0.10),rgba(245,192,78,0.08));display:flex;align-items:center;gap:10px;">
-      <i class="ti ti-star" style="color:#F5C04E;font-size:20px;flex-shrink:0;"></i>
-      <span style="font-size:13px;line-height:1.4;color:var(--text,#eaf6ff);">Recuerda llenar los <strong>Especiales</strong> antes del <strong>22 de junio a las 12:00</strong>: Campeón, Subcampeón y Goleador.</span>
-    </div>` : ''}
+    ${!especialesCerrado() ? `
+    <div onclick="showPage('especiales')" style="cursor:pointer;overflow:hidden;white-space:nowrap;max-width:760px;margin:0 auto 8px;padding:9px 0;border:1px solid rgba(255,60,60,0.55);border-radius:8px;background:linear-gradient(90deg,rgba(200,20,20,0.20),rgba(255,70,70,0.12),rgba(200,20,20,0.20));">
+      <div style="display:inline-flex;white-space:nowrap;animation:espMarquee 16s linear infinite;will-change:transform;">
+        <span style="font-family:'Orbitron',sans-serif;font-weight:700;color:#ff5a5a;font-size:14px;letter-spacing:1.5px;text-shadow:0 0 10px rgba(255,60,60,0.6);">⚠ ESPECIALES: hay tiempo hasta el VIERNES 3 DE JULIO 11:59 p.m. — Campeón · Subcampeón · Goleador &nbsp;·&nbsp;&nbsp;</span>
+        <span style="font-family:'Orbitron',sans-serif;font-weight:700;color:#ff5a5a;font-size:14px;letter-spacing:1.5px;text-shadow:0 0 10px rgba(255,60,60,0.6);">⚠ ESPECIALES: hay tiempo hasta el VIERNES 3 DE JULIO 11:59 p.m. — Campeón · Subcampeón · Goleador &nbsp;·&nbsp;&nbsp;</span>
+      </div>
+    </div>
+    <style>@keyframes espMarquee{from{transform:translateX(0)}to{transform:translateX(-50%)}}</style>` : ''}
 
     <div id="page-grupos" class="page${MOSTRAR_GRUPOS ? ' active' : ''}"></div>
     <div id="page-eliminacion" class="page${MOSTRAR_GRUPOS ? '' : ' active'}"></div>
@@ -584,7 +591,7 @@ function renderEspeciales() {
     </optgroup>
   `).join('')
 
-  const bloqueado = eliminacionBloqueada(fechasGrupos)
+  const bloqueado = especialesCerrado()
   const dis = bloqueado ? 'disabled' : ''
 
   cont.innerHTML = `
@@ -593,11 +600,11 @@ function renderEspeciales() {
       ${bloqueado
         ? `<div class="aviso-bloqueo">
              <i class="ti ti-lock"></i>
-             Esta fase ya está cerrada. El plazo venció el 22 de junio a las 12:00.
+             Esta fase ya está cerrada. El plazo venció el ${TEXTO_CIERRE_ESP}
            </div>`
         : `<div class="aviso-cierre">
              <i class="ti ti-clock"></i>
-             Puedes llenar esta fase hasta: <strong>${textoCierre(fechasGrupos)}</strong>
+             Puedes llenar esta fase hasta: <strong>${TEXTO_CIERRE_ESP}</strong>
            </div>`}
       <div class="pts-grid" style="margin-bottom:0;margin-top:12px;">
         <div class="pts-item"><span class="pts-val">10</span><div class="pts-desc">Campeón correcto</div></div>
@@ -656,7 +663,7 @@ function renderEspeciales() {
   const espPending = { ...especiales }
 
   window.saveEsp = async (field, val) => {
-    if (eliminacionBloqueada(fechasGrupos)) {
+    if (especialesCerrado()) {
       toast('La fase de especiales ya está cerrada', 'err')
       return
     }
@@ -696,9 +703,6 @@ async function renderRanking() {
           <thead><tr>
             <th>#</th>
             <th>Participante</th>
-            ${MOSTRAR_GRUPOS ? '<th>Grupos</th>' : ''}
-            <th>KO</th>
-            <th>Especiales</th>
             <th>Total</th>
           </tr></thead>
           <tbody>
@@ -709,9 +713,6 @@ async function renderRanking() {
               return `<tr class="rank-row">
                 <td><span class="rank-pos ${cls}">${medal}</span></td>
                 <td style="font-weight:600;font-size:15px;">${r.nombre || '—'}</td>
-                ${MOSTRAR_GRUPOS ? `<td style="font-family:'Orbitron',monospace;font-size:13px;color:var(--text-dim);">${r.pts_grupos}</td>` : ''}
-                <td style="font-family:'Orbitron',monospace;font-size:13px;color:var(--text-dim);">${r.pts_ko}</td>
-                <td style="font-family:'Orbitron',monospace;font-size:13px;color:var(--text-dim);">${r.pts_especiales}</td>
                 <td><span class="rank-pts">${r.total}</span></td>
               </tr>`
             }).join('')}
@@ -767,7 +768,7 @@ async function renderAdmin() {
       </p>
       <div class="aviso-cierre" style="margin-bottom:14px;">
         <i class="ti ti-clock"></i>
-        Las predicciones Especiales se cierran: <strong>${textoCierre(fechasGrupos)}</strong>
+        Las predicciones Especiales se cierran: <strong>${TEXTO_CIERRE_ESP}</strong>
       </div>
       <div id="fechas-editor">
         ${GRUPOS.map(g => {
